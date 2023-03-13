@@ -18,17 +18,26 @@ Change to this directory and execute `make`
 # suppress verbose make output
 MAKEFLAGS += --silent
 
-$(info pwd=$(shell pwd))
+# test shell command BEFORE out shell wrapper gets initialized
+$(info test default shell function pwd=$(shell pwd))
 
-# set absolute path to bash executable as SHELL
-SHELL != sh -c "command -v bash"
+# initialize bash-wrapper
+include bash-wrapper.mk
 
-.SHELLFLAGS := --rcfile ./lib.bash -ic -- 
+# configure our bash library to be loaded by bash-wrapper everytime a shell is instantiated by make 
+.BW_ALWAYS_PRELOAD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/lib.bash
 
-# PROBLEM: will not work for whatever reason
-# $(info whoami=$(shell whoami))
+# enable verbose debug output
+# export BW_XTRACE := true
 
-$(info pwd=$(shell pwd))
+#
+# test the availability of the bash library functions 
+# in make recipes and make shell functions
+#
+
+$(info test wrapped shell function whoami=$(shell whoami)) 
+$(info test wrapped shell function to_uppercase whoami=$(shell to_uppercase whoami))
+$(info test wrapped shell function pwd=$(shell pwd))
 
 # .ONESHELL tells make to execute a target recipe as a single SHELL call
 .ONESHELL:
@@ -54,10 +63,9 @@ all:
 bash exports (`lib.bash`) : 
 
 ```shell
-# # see https://github.com/nclsgd/makebashwrapper/blob/master/_mklib_/wrapper/makebashwrapper.sh#L24
-# enable useful debugging infos
-# PS4='+${BASH_SOURCE[0]}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}: '
-# set -x
+#
+# this is a custom bash library exposing some functions/symbols
+#
 
 export MY_SETTING="This-Is-My-Setting-Value"
 
@@ -75,7 +83,5 @@ function lib:to_lowercase() {
 }
 # export it for use in sub shells
 export -f lib:to_lowercase
-
-set -e -u -o pipefail
 ```
 

@@ -1,49 +1,26 @@
 # suppress verbose make output
 MAKEFLAGS += --silent
 
-$(info default-inline-shell pwd=$(shell pwd))
+# test shell command BEFORE out shell wrapper gets initialized
+$(info test default shell function pwd=$(shell pwd))
 
-# Override and undefine any .MAKEBASHWRAPPER_ variables that may be inherited
-# from the environment or the Make command line variables or even earlier in
-# the Makefile inclusion list:
-override undefine .MAKEBASHWRAPPER_PATH
-override undefine .MAKEBASHWRAPPER_PRELOAD
-override undefine .MAKEBASHWRAPPER_PROLOGUE
-override undefine .MAKEBASHWRAPPER_ALWAYS_PRELOAD
-override undefine .MAKEBASHWRAPPER_ALWAYS_PROLOGUE
+# initialize bash-wrapper
+include bash-wrapper.mk
 
-# It is important that the SHELL and .SHELLFLAGS variables must not be
-# inherited from the environment. Override them and set them as requested:
+# configure our bash library to be loaded by bash-wrapper everytime a shell is instantiated by make 
+.BW_ALWAYS_PRELOAD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/lib.bash
+
+# enable verbose debug output
+# export BW_XTRACE := true
+
 #
-# Note regarding SHELL: We cannot use SHELL=bash with the "wrapper.sh" script
-# as argument to bash.  There is a special handling of the recipe lines
-# parsing if the shell is detected to be a Bourne compatible shell by GNU Make
-# (i.e. /bin/sh, /bin/ksh and so on).  In that scenario, leading `-`, `+` and
-# `@` characters are trimmed within the recipe content.  This preprocessing may
-# break some Bash scripts that we want to inject into the wrapper script.
-# Let's stick with the path to "wrapper.sh" file marked as executable.
-# For more information, see the GNU Make source code and read function
-# `construct_command_argv_internal()` (see the few lines that follow the call
-# to the function `is_bourne_compatible_shell` within it).
+# test the availability of the bash library functions 
+# in make recipes and make shell functions
 #
-override SHELL := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/bash-wrapper.sh
-override .SHELLFLAGS = $(foreach ._item,$(.MAKEBASHWRAPPER_PRELOAD),--preload $(._item)) \
-	$(foreach ._item,$(.MAKEBASHWRAPPER_PROLOGUE),--prologue $(._item)) \
-	$(foreach ._item,$(.MAKEBASHWRAPPER_ALWAYS_PRELOAD),--always-preload $(._item)) \
-	$(foreach ._item,$(.MAKEBASHWRAPPER_ALWAYS_PROLOGUE),--always-prologue $(._item)) \
-	--
 
-# Explicitly do *NOT* export SHELL as it may break some scripts or third-party
-# programs used in Make recipes since at this current point, SHELL is the path
-# to "wrapper.sh" (see above) which is not a real true shell.
-unexport SHELL
-
-# export MAKEBASHWRAPPER_XTRACE := true
-.MAKEBASHWRAPPER_ALWAYS_PRELOAD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/lib.bash
-
-$(info test-inline-shell whoami=$(shell whoami)) 
-$(info test-inline-shell to_uppercase whoami=$(shell to_uppercase whoami))
-$(info test-inline-shell pwd=$(shell pwd))
+$(info test wrapped shell function whoami=$(shell whoami)) 
+$(info test wrapped shell function to_uppercase whoami=$(shell to_uppercase whoami))
+$(info test wrapped shell function pwd=$(shell pwd))
 
 # .ONESHELL tells make to execute a target recipe as a single SHELL call
 .ONESHELL:

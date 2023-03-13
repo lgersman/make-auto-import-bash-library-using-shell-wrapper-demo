@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 
-# see https://github.com/nclsgd/makebashwrapper
+# partly borrowed from a prior art project 
+# see 
+# 	https://github.com/nclsgd/makebashwrapper 
+# 	Copyright 2017-2020 Nicolas Godinho <nicolas@godinho.me>
 
-# Bash "strict mode"
+# enable bash "strict mode"
 set -e -u -o pipefail
 
 # The name of this present script:
 readonly SELFNAME="${BASH_SOURCE[0]##*/}"
 
 # Handle debugging environment variables:
-if [[ -n "${MAKEBASHWRAPPER_XTRACE:-}" ]]; then
-    echo >&2 "MAKEBASHWRAPPER_XTRACE is set: activating xtrace."
+if [[ -n "${BW_XTRACE:-}" ]]; then
+    echo >&2 "BW_XTRACE is set: activating xtrace."
     PS4='+${BASH_SOURCE[0]}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}: '
     set -x
 fi
 
 main() {
-    local script_body=''
     local preloads=() always_preloads=() prologues=() always_prologues=()
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -34,13 +36,12 @@ main() {
         esac
     done
     if [[ "$#" -gt 1 ]]; then
-        echo >&2 "$SELFNAME: Too many arguments given"
+        echo "$SELFNAME: Too many arguments given" >&2
         exit 255
     fi
-    script_body="${1:-}"
+    local script_body="${1:-}"
 
-    # If script_body is empty or only composed of empty lines or comments (e.g.
-    # like the documentation comment block to be parsed by the Awk script),
+    # if script_body is empty or only composed of empty lines or comments,
     # then do not process to avoid running (most of the time, involuntarily)
     # code with potential side-effects in the preload scripts or in the
     # prologues.
@@ -125,18 +126,18 @@ main() {
         "$script_body"
     )
 
-    if [[ -n "${MAKEBASHWRAPPER_DUMPSCRIPT:-}" ]]; then
+    if [[ -n "${BW_DUMPSCRIPT:-}" ]]; then
         printf '%s\n' "${script_lines[@]}"
         exit 0
     else
-        unset_makebashwrapper_vars_from_environment
+        unset_BW_vars_from_environment
         exec "${BASH:-bash}" <(printf '%s\n' "${script_lines[@]}")
     fi
 }
 
-unset_makebashwrapper_vars_from_environment() {
+unset_BW_vars_from_environment() {
     local var
-    for var in $(compgen -A export MAKEBASHWRAPPER_ || :); do
+    for var in $(compgen -A export BW_ || :); do
         if [[ "$var" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ && -n "${!var+set}" ]]; then
             unset "$var"
         fi
