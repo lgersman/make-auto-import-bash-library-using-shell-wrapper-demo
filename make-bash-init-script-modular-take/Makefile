@@ -13,13 +13,15 @@ include bash-wrapper.mk
 # enable verbose debug output
 # export BW_XTRACE := true
 
+export BW_DUMPSCRIPT := true
+
 #
 # test the availability of the bash library functions 
 # in make recipes and make shell functions
 #
 
 $(info test wrapped shell function whoami=$(shell whoami)) 
-$(info test wrapped shell function to_uppercase whoami=$(shell to_uppercase whoami))
+$(info test wrapped shell function to_uppercase whoami=$(shell to_uppercase $$(whoami)))
 $(info test wrapped shell function pwd=$(shell pwd))
 
 # .ONESHELL tells make to execute a target recipe as a single SHELL call
