@@ -9,11 +9,13 @@ include bash-wrapper.mk
 
 # configure our bash library to be loaded by bash-wrapper everytime a shell is instantiated by make 
 .BW_ALWAYS_PRELOAD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/lib.bash
+.BW_ALWAYS_PRELOAD += $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/other-lib.bash
 
-# enable verbose debug output
+# enable verbose debug output for the shell wrapper
 # export BW_XTRACE := true
 
-export BW_DUMPSCRIPT := true
+# @TODO: works for some reason only for recipes ? 
+# export BW_DUMP := true
 
 #
 # test the availability of the bash library functions 

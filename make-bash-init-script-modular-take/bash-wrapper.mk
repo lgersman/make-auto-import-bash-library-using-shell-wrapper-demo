@@ -1,7 +1,7 @@
+# 
 # partly borrowed from a prior art project 
-# see 
-# 	https://github.com/nclsgd/makebashwrapper 
-# 	Copyright 2017-2020 Nicolas Godinho <nicolas@godinho.me>
+# see https://github.com/nclsgd/makebashwrapper 
+#
 
 # Inclusion guard
 ifndef ._BW_defined

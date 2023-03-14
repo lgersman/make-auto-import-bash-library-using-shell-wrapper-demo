@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
+# 
 # partly borrowed from a prior art project 
-# see 
-# 	https://github.com/nclsgd/makebashwrapper 
-# 	Copyright 2017-2020 Nicolas Godinho <nicolas@godinho.me>
+# see https://github.com/nclsgd/makebashwrapper 
+#
 
 # enable bash "strict mode"
 set -e -u -o pipefail
@@ -43,7 +43,7 @@ main() {
         break
         ;;  
       -*) 
-        echo "$SELFNAME: Unknown option: $1" >&2
+        echo "$SELFNAME: unknown option: $1" >&2
         exit 255 
         ;;
       *)    # Not an argument anymore
@@ -51,7 +51,7 @@ main() {
         ;;  
     esac
   done
-  [[ "$#" -gt 1 ]] && echo "$SELFNAME: Too many arguments given" >&2 && exit 255
+  [[ "$#" -gt 1 ]] && echo "$SELFNAME: too many arguments given" >&2 && exit 255
   
   local script_body="${1:-}"
 
@@ -71,79 +71,42 @@ main() {
   [[ "$script_body_has_code" != yes ]] && exit 0
 
   # fix and export SHELL as it is explicitly changed and undefined by the
-  # "bash-wrapper.mk" file:
-  export SHELL="${BASH:-/bin/sh}"  # BASH should always be set and valid anyway
+  # "bash-wrapper.mk" file. BASH should always be set and valid anyway
+  export SHELL="${BASH:-/bin/sh}"  
 
   # we can now compose the script to be fed to a new bash instance that will
-  # replace this current bash instance (see below):
+  # replace this current bash instance (see below)
   local script_lines
-  script_lines=(
-    "#!/usr/bin/env bash"
-    "set -e -u -o pipefail  # bash 'strict mode'"
-    ""  # line break on purpose
-  )
+  script_lines=( '#!/usr/bin/env bash' 'set -e -u -o pipefail' '')
 
   # Note: MAKELEVEL appears to be the only variable always exported
   # within the recipe scripts whatever the ".EXPORT_ALL_VARIABLES" or
   # "unexport" settings.  We use this side-effect to assert if we are
   # currently running a recipe or not (i.e. a command executed within a
   # `$(shell ...)` make function).  In such case, also preload scripts
-  # and unroll prologue meant for the recipes:
+  # and unroll prologue meant for the recipes
   if [[ "${MAKELEVEL:-}" != '' ]]; then
-    script_lines+=(
-      "# This is a recipe. (MAKELEVEL=${MAKELEVEL:-<undefined>})"
-      ""  # line break on purpose
-    )
+    script_lines+=( "# this is a recipe. (MAKELEVEL=${MAKELEVEL:-<undefined>})" '')
     preloads=( "${always_preloads[@]}" "${preloads[@]}" )
     prologues=( "${always_prologues[@]}" "${prologues[@]}" )
   else
-    script_lines+=(
-      "# This is not a recipe. (MAKELEVEL is unset or empty)"
-      "# Only loading unconditional preload(s) and prologue(s)."
-      ""  # line break on purpose
-    )
+    script_lines+=( '# this is not a recipe. (MAKELEVEL is unset or empty)' '# Only loading unconditional preload(s) and prologue(s).' '')
     preloads=( "${always_preloads[@]}" )
     prologues=( "${always_prologues[@]}" )
   fi
 
-  # include/source preloads:
-  local item='' has_items=no line=''
-  # for item in "${preloads[@]}"; do
-  #   if [[ -z "$has_items" ]]; then
-  #     script_lines+=( "# Preload scripts:" )
-  #     has_items=yes
-  #   fi
-  #   printf -v line 'source %q' "$item"
-  #   script_lines+=( "$line" )
-  # done
-  if (( "${#preloads[@]}" > 0 )); then
-    script_lines+=( "# Preload scripts:" )
-    printf -v sources 'source %q\n' "${preloads[@]}"
-    script_lines+=( "${sources[@]}" )
-    script_lines+=( '' )  # line break
-  fi
-  # [[ "$has_items" == yes ]] && script_lines+=('')  # line break
+  # include/source preloads
+  (( "${#preloads[@]}" > 0 )) && script_lines+=( "# preload scripts:" "$(printf 'source %q\n' "${preloads[@]}")" '' )  
 
-  # include/source prologues:
-  local item='' has_items=no line=''
-  for item in "${prologues[@]}"; do
-    if [[ -z "$has_items" ]]; then
-      script_lines+=( "# Prologue scripts:" )
-      has_items=yes
-    fi
-    printf -v line 'source %q' "$item"
-    script_lines+=( "$line" )
-  done
-  [[ "$has_items" == yes ]] && script_lines+=('')  # line break
+  # include/source prologues
+  (( "${#prologues[@]}" > 0 )) && script_lines+=( "# prologue scripts:" "$(printf 'source %q\n' "${prologues[@]}")" '' )
 
-  # append rest of the script (the body, i.e. the Makefile recipe contents):
-  script_lines+=(
-    "$script_body"
-  )
+  # append rest of the script (i.e. the Makefile recipe contents)
+  script_lines+=( "$script_body" )
 
-  if [[ -n "${BW_DUMPSCRIPT:-}" ]]; then
+  # @TODO: why does BW_DUMP doesnt work for shell functions ? 
+  if [[ "${BW_DUMP:-}" != '' ]]; then
     printf '%s\n' "${script_lines[@]}"
-    exit 0
   else
     unset_BW_vars_from_environment
     exec "${BASH:-bash}" <(printf '%s\n' "${script_lines[@]}")
