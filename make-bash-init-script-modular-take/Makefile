@@ -12,10 +12,10 @@ include bash-wrapper.mk
 .BW_ALWAYS_PRELOAD += $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/other-lib.bash
 
 # enable verbose debug output for the shell wrapper
-# export BW_XTRACE := true
+# .BW_XTRACE := true
 
 # @TODO: works for some reason only for recipes ? 
-# export BW_DUMP := true
+# .BW_DUMP := true
 
 #
 # test the availability of the bash library functions 
@@ -32,16 +32,17 @@ $(info test wrapped shell function pwd=$(shell pwd))
 .PHONY: all 
 # et voilà : the recipe can use automatically exported functions/symbols from `lib.bash` 
 all: 
-	# reference variable from lib.bash
-	echo "MY_SETTING=$$MY_SETTING"
+	$(info "huhu")
+	# # reference variable from lib.bash
+	# echo "MY_SETTING=$$MY_SETTING"
 
-	# use exported function from lib.bash
-	echo "lowercased : $$(to_uppercase $$MY_SETTING)"
+	# # use exported function from lib.bash
+	# echo "lowercased : $$(to_uppercase $$MY_SETTING)"
 
-	# use exported function with namespace from lib.bash
-	echo "uppercased : $$(lib:to_lowercase $$MY_SETTING)"
+	# # use exported function with namespace from lib.bash
+	# echo "uppercased : $$(lib:to_lowercase $$MY_SETTING)"
 
-	# print splitted PATH environment 
-	# (just to ensure if bashrc & co are loaded)
-	printf "\n==== PATH environment ====\n"
-	printf "%s\n" $$(echo $$PATH | tr ":" $$'\n')
+	# # print splitted PATH environment 
+	# # (just to ensure if bashrc & co are loaded)
+	# printf "\n==== PATH environment ====\n"
+	# printf "%s\n" $$(echo $$PATH | tr ":" $$'\n')

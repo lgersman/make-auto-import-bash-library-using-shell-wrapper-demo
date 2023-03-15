@@ -11,13 +11,6 @@ set -e -u -o pipefail
 # The name of this present script:
 readonly SELFNAME="${BASH_SOURCE[0]##*/}"
 
-# enable verbose bash debug info if BW_XTRACE is not empty
-if [[ -n "${BW_XTRACE:-}" ]]; then
-  echo >&2 "BW_XTRACE is set: activating xtrace."
-  PS4='+${BASH_SOURCE[0]}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}: '
-  set -x
-fi
-
 main() {
   local preloads=() always_preloads=() prologues=() always_prologues=()
   while [[ "$#" -gt 0 ]]; do
@@ -36,6 +29,19 @@ main() {
         ;;
       --always-prologue)
         always_prologues+=("${2:?"missing argument to $1"}")
+        shift 2
+        ;;
+      --xtrace)        
+        BW_XTRACE=("${2:?"missing argument to $1"}")
+        if [[ "$BW_XTRACE" == 'true' ]]; then
+          echo >&2 "BW_XTRACE is set: activating xtrace."
+          PS4='+${BASH_SOURCE[0]}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}: '
+          set -x
+        fi
+        shift 2
+        ;;
+      --dump)        
+        BW_DUMP=("${2:?"missing argument to $1"}")
         shift 2
         ;;
       --)   # Special argument to break argument parsing
@@ -104,8 +110,7 @@ main() {
   # append rest of the script (i.e. the Makefile recipe contents)
   script_lines+=( "$script_body" )
 
-  # @TODO: why does BW_DUMP doesnt work for shell functions ? 
-  if [[ "${BW_DUMP:-}" != '' ]]; then
+  if [[ "${BW_DUMP:-}" == 'true' ]]; then
     printf '%s\n' "${script_lines[@]}"
   else
     unset_BW_vars_from_environment

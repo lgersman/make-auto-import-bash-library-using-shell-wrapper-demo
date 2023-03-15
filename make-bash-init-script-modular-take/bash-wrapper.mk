@@ -9,11 +9,16 @@ ifndef ._BW_defined
 
 	# undefine any .BW_ variables that may be (unintended) inherited
 	# from the environment or the Make command line variables
-	override undefine .BW_PATH
 	override undefine .BW_PRELOAD
 	override undefine .BW_PROLOGUE
-	override undefine .BW_ALWAYS_PRELOAD
+	override undefine .BW_ALWAYS_PRELOADm
 	override undefine .BW_ALWAYS_PROLOGUE
+	
+	# set to true in your Makefile to enable bash xtrace 
+	.BW_XTRACE ?= false
+
+	# set to true in your Makefile to dump the generated bash code instead of executing it 
+	.BW_DUMP ?= false
 
 	# it is important that the SHELL and .SHELLFLAGS variables must not be
 	# inherited from the environment.
@@ -37,6 +42,8 @@ ifndef ._BW_defined
 		$(foreach ._item,$(.BW_PROLOGUE),--prologue $(._item)) \
 		$(foreach ._item,$(.BW_ALWAYS_PRELOAD),--always-preload $(._item)) \
 		$(foreach ._item,$(.BW_ALWAYS_PROLOGUE),--always-prologue $(._item)) \
+		--xtrace $(.BW_XTRACE) \
+		--dump $(.BW_DUMP) \
 		--
 
 	# explicitly do *NOT* export SHELL as it may break some scripts or third-party
