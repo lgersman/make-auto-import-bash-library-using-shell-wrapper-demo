@@ -3,7 +3,7 @@
 # see https://github.com/nclsgd/makebashwrapper 
 #
 
-# Inclusion guard
+# inclusion guard
 ifndef ._BW_defined
 	override ._BW_defined := yes
 
