@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+Makefile=$(cat Makefile) other_lib_bash=$(cat other-lib.bash) lib_bash=$(cat lib.bash) envsubst > $(basename $0 .template) <<'EOL'
+# Demo Makefile automatically providing bash exports from your custom bash libraries to make recipes  
+
+This directory contins a fully functional Makefile example for injecting custom Bash libraries into make targets and make shell functions.
+
+This enables you to out source complex Bash Makefile recipes into separate bash files.
+
+## Features 
+
+- separation of concerns (Makefile flow and Bash recipe logic)
+
+- testing of Bash recipes / Bash logic outside of Make using Shell test frameworks like https://github.com/kward/shunit2 or [bats](https://github.com/bats-core/bats-core)
+
+- your build scripts get much more readable/maintanable
+
+- Makefiles contains just dependency definitions calling Bash functions provided by your Bash library functions
+
+- some bash debugging features like Bash xtrace enablement and dumping the Bash code executed by Make
+
+- composition : you can reuse your bash libraries in various different Makefiles / Repositories
+
+## Prerequisites
+
+- GNU make
+
+- Bash
+
+## Usage
+
+Change to this directory and execute `make` 
+
+--- 
+
+`Makefile` :
+
+```make
+$Makefile
+```
+
+injected Bash library `lib.bash` : 
+
+```shell
+$lib_bash
+```
+
+2nd injected Bash library  (`other-lib.bash`) : 
+
+```shell
+$other_lib_bash
+```
+
+EOL

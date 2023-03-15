@@ -1,7 +1,6 @@
-# # see https://github.com/nclsgd/makebashwrapper/blob/master/_mklib_/wrapper/makebashwrapper.sh#L24
-# enable useful debugging infos
-# PS4='+${BASH_SOURCE[0]}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}: '
-# set -x
+#
+# this is a custom bash library exposing some functions/symbols
+#
 
 export MY_SETTING="This-Is-My-Setting-Value"
 
@@ -19,5 +18,3 @@ function lib:to_lowercase() {
 }
 # export it for use in sub shells
 export -f lib:to_lowercase
-
-set -e -u -o pipefail

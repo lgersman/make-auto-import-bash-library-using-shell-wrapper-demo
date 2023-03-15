@@ -5,16 +5,16 @@ MAKEFLAGS += --silent
 $(info test default shell function pwd=$(shell pwd))
 
 # initialize bash-wrapper
-include bash-wrapper.mk
+include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/bash-wrapper.mk
 
 # configure our bash library to be loaded by bash-wrapper everytime a shell is instantiated by make 
 .BW_ALWAYS_PRELOAD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/lib.bash
 .BW_ALWAYS_PRELOAD += $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/other-lib.bash
 
-# enable verbose debug output for the shell wrapper
+# debug feature: enable verbose debug output for the shell wrapper
 # .BW_XTRACE := true
 
-# @TODO: works for some reason only for recipes ? 
+# debug feature: enable to just dump the generated bash code and exit 
 # .BW_DUMP := true
 
 #
@@ -32,17 +32,19 @@ $(info test wrapped shell function pwd=$(shell pwd))
 .PHONY: all 
 # et voilà : the recipe can use automatically exported functions/symbols from `lib.bash` 
 all: 
-	$(info "huhu")
-	# # reference variable from lib.bash
-	# echo "MY_SETTING=$$MY_SETTING"
+	# output result of calling a bash function defined in other-lib.bash
+	$(info $(shell my.hello "world"))
 
-	# # use exported function from lib.bash
-	# echo "lowercased : $$(to_uppercase $$MY_SETTING)"
+	# reference variable from lib.bash
+	echo "MY_SETTING=$$MY_SETTING"
 
-	# # use exported function with namespace from lib.bash
-	# echo "uppercased : $$(lib:to_lowercase $$MY_SETTING)"
+	# use exported function from lib.bash
+	echo "lowercased : $$(lib:to_lowercase $$MY_SETTING)"
 
-	# # print splitted PATH environment 
-	# # (just to ensure if bashrc & co are loaded)
-	# printf "\n==== PATH environment ====\n"
-	# printf "%s\n" $$(echo $$PATH | tr ":" $$'\n')
+	# use exported function with namespace from lib.bash
+	echo "uppercased : $$(to_uppercase $$MY_SETTING)"
+
+	# print splitted PATH environment 
+	# (just to ensure if bashrc & co are loaded)
+	printf "\n==== PATH environment ====\n"
+	printf "%s\n" $$(echo $$PATH | tr ":" $$'\n')

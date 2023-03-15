@@ -2,6 +2,21 @@
 Makefile=$(cat Makefile) lib_bash=$(cat lib.bash) envsubst > $(basename $0 .template) <<'EOL'
 # Demo Makefile automatically providing bash exports from a bash init file to make recipes  
 
+This example is a plain & simple effort to implement automatic bash script injection for make shell calls.
+
+It simply reuses the bash `--rcfile` option to force bash to load a script file right before executing the shell code provided by make (i.e. the recipe or shell function argument).
+
+This solution works for many use cases (i.e. all shell recipes) but NOT for all cases. 
+
+Example: Calling a make shell function like `$(info whoami=$(shell whoami))` will abort the make process.
+`$(info whoami=$(shell pwd))` will work in contrast. 
+
+In other words the `--rcfile` effort is working in simple scenarios but is not a stable solution at all.
+
+The reason is that we need to switch bash to be in interactive mode (using switch `-i`) to force the `--rcfile` option to be interpreted.
+
+Take a peek to [../make-bash-init-script-modular-take](../make-bash-init-script-modular-take) to see the "gold" solution for bash file injection into Makefile recipes and shell functions. 
+
 ## Prerequisites
 
 - GNU make
